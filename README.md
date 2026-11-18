@@ -1,4 +1,4 @@
- # Supermarket-Sales-API
+# Supermarket-Sales-API
 
 A Python backend API that analyzes supermarket sales data from Kaggle. Built with **FastAPI**, containerized with **Docker**, and verified with **pytest** and **GitHub Actions CI**.
 
@@ -6,24 +6,47 @@ A Python backend API that analyzes supermarket sales data from Kaggle. Built wit
 
 - FastAPI endpoints for sales analytics and a `/health` check
 - Interactive API documentation (Swagger UI) at `/docs`
-- Container health monitoring through the `/health` endpoint
-- Docker Compose for one-command startup
+- Docker Compose for one-command startup, with a built-in health check on `/health`
 - Unit tests with pytest
 - GitHub Actions workflow that runs the tests on every push and pull request
 - Makefile shortcuts for build, run, and test
+
+## Tech Stack
+
+- **Language:** Python 3.12
+- **Framework:** FastAPI (served with Uvicorn), Pydantic
+- **Data analysis:** pandas, NumPy
+- **Excel report export:** openpyxl
+- **Containerization:** Docker, Docker Compose
+- **Testing:** pytest
+- **CI:** GitHub Actions
+- **Automation:** Makefile
 
 ## Project Structure
 
 ```
 Supermarket-Sales-API/
-├── src/                  # API source code
-├── docs/                 # Project documentation
-├── .github/workflows/    # GitHub Actions CI pipeline
+├── src/                      # API source code and dataset
+│   ├── main.py               # FastAPI app and endpoints
+│   ├── analytics.py          # sales analysis functions
+│   ├── models.py             # transaction classes and validation
+│   └── data/
+│       └── SuperMarket Analysis.csv
+├── tests/                    # pytest test suite
+│   ├── conftest.py
+│   ├── test_analytics.py
+│   ├── test_api.py
+│   └── test_models.py
+├── docs/
+│   ├── screenshots/          # assignment screenshots
+│   └── notes.md              # technical notes
+├── .github/workflows/        # GitHub Actions CI pipeline
 ├── Dockerfile
 ├── docker-compose.yml
 ├── Makefile
 ├── requirements.txt
 ├── requirements-dev.txt
+├── LICENSE.txt
 ├── .dockerignore
 └── .gitignore
 ```
@@ -52,14 +75,53 @@ docker compose up --build
 
 ```bash
 docker build -t supermarket-sales-api .
-docker run -p 8000:8000 supermarket-sales-api
+docker run -d --name supermarket-sales-api -p 8000:8000 supermarket-sales-api
 ```
+
+Both options use port 8000, so run only one at a time. To stop the Compose setup, run `docker compose down`.
 
 Once the container is running, the API is available at:
 
-- API root: http://localhost:8000
 - Interactive docs: http://localhost:8000/docs
 - Health check: http://localhost:8000/health
+
+## How to Test It
+
+After the container is running:
+
+1. Open http://localhost:8000/docs in your browser.
+2. Expand `GET /health`, click **Try it out**, then **Execute**. You should get status `200` with `{"status": "ok"}`.
+3. Try `GET /summary` the same way. It returns the number of rows (1000) and statistics about the dataset.
+
+Or from a terminal:
+
+```bash
+curl http://localhost:8000/health
+curl http://localhost:8000/summary
+```
+
+## Stop and Clean Up
+
+Docker Compose:
+
+```bash
+docker compose down
+```
+
+Plain Docker:
+
+```bash
+docker stop supermarket-sales-api
+docker rm supermarket-sales-api
+```
+
+Remove the image (optional):
+
+```bash
+docker rmi supermarket-sales-api
+```
+
+With Make, `make stop` stops and removes the container, and `make clean` also removes the image.
 
 ## API Endpoints
 
@@ -67,10 +129,10 @@ Once the container is running, the API is available at:
 |--------|--------------------------|------------------------------------------------------------------|
 | GET    | `/health`                | Service health check                                             |
 | GET    | `/summary`               | Overall summary statistics of the sales dataset                  |
-| GET    | `/sales/by-branch`       | Sales totals grouped by branch                                   |
-| GET    | `/sales/top-rated`       | Average customer rating per product line                         |
-| GET    | `/payments`              | Number of transactions per payment method                        |
-| GET    | `/pivot`                 | Pivot table of the sales data                                    |
+| GET    | `/sales/by-branch`       | Sales totals per branch, plus the top-performing branch          |
+| GET    | `/sales/top-rated`       | Average customer rating per product line, plus the top-rated one |
+| GET    | `/payments`              | Number of transactions per payment method, plus the most used one |
+| GET    | `/pivot`                 | Pivot table of sales totals by product line and branch           |
 | GET    | `/report`                | Download the full analysis as an Excel report (`.xlsx`)          |
 | POST   | `/transactions/validate` | Validate a transaction (`base`, `discounted`, or `taxed`) and return its total |
 
@@ -87,9 +149,22 @@ Example request for `POST /transactions/validate`:
 }
 ```
 
+Example response (12.5 x 4 = 50, minus a 10% discount):
+
+```json
+{
+  "valid": true,
+  "kind": "discounted",
+  "total": 45
+}
+```
+
 Invalid transactions return HTTP `422` with an error message. Full, interactive documentation for every endpoint is available at `/docs` while the API is running.
 
 ## Configuration
+
+- **Port:** the API listens on port `8000` inside the container and is published on port `8000` of your machine (`-p 8000:8000`). To use a different port on your machine, change the left number, for example `-p 9000:8000`.
+- **Environment variables:** none are required. The optional variable below is already set in `docker-compose.yml`.
 
 | Variable    | Default                           | Description                    |
 |-------------|-----------------------------------|--------------------------------|
@@ -129,6 +204,16 @@ A GitHub Actions workflow (`.github/workflows/`) runs automatically on every pus
 ## Dataset
 
 Sales data comes from the [Supermarket Sales Dataset](https://www.kaggle.com/datasets/faresashraf1001/supermarket-sales) on Kaggle, by Fares Ashraf (Apache 2.0 license).
+
+## Attribution
+
+This project is based on our team's earlier project, `Supermarket-Sales-Analyzer`, a set of Python scripts that analyze the Kaggle Supermarket Sales dataset. It was restructured here as a FastAPI service and containerized with Docker for this assignment. The dataset is credited in the Dataset section above.
+
+
+ ## License
+
+This project is licensed under the MIT License. See [LICENSE.txt](LICENSE.txt) for details.
+
 
 ## Author
 
