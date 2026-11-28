@@ -1,15 +1,26 @@
-# Supermarket-Sales-API
+ # Supermarket-Sales-API
 
-A Python backend API that analyzes supermarket sales data from Kaggle. Built with **FastAPI**, containerized with **Docker**, and verified with **pytest** and **GitHub Actions CI**.
+A Python backend API that analyzes supermarket sales data from Kaggle. Built with **FastAPI**, containerized with **Docker**, deployed on **GitHub Codespaces**, and verified with **pytest** and **GitHub Actions CI**.
 
 ## Features
 
 - FastAPI endpoints for sales analytics and a `/health` check
 - Interactive API documentation (Swagger UI) at `/docs`
+- Multi-stage Docker build for a smaller, cleaner image
 - Docker Compose for one-command startup, with a built-in health check on `/health`
 - Unit tests with pytest
 - GitHub Actions workflow that runs the tests on every push and pull request
 - Makefile shortcuts for build, run, and test
+
+## Production URL
+
+The API is deployed on **GitHub Codespaces** (Docker container, port 8000, public):
+
+- Swagger UI: https://silver-space-waffle-5vg9r59v5p7qf4vqg-8000.app.github.dev/docs
+- Health check: https://silver-space-waffle-5vg9r59v5p7qf4vqg-8000.app.github.dev/health
+
+> **Note:** Codespaces is not a permanent server. The URL works only while the
+> Codespace is running, and it stops automatically after a period of inactivity.
 
 ## Tech Stack
 
@@ -17,10 +28,11 @@ A Python backend API that analyzes supermarket sales data from Kaggle. Built wit
 - **Framework:** FastAPI (served with Uvicorn), Pydantic
 - **Data analysis:** pandas, NumPy
 - **Excel report export:** openpyxl
-- **Containerization:** Docker, Docker Compose
+- **Containerization:** Docker (multi-stage build), Docker Compose
 - **Testing:** pytest
 - **CI:** GitHub Actions
 - **Automation:** Makefile
+- **Deployment:** GitHub Codespaces
 
 ## Project Structure
 
@@ -41,7 +53,7 @@ Supermarket-Sales-API/
 │   ├── screenshots/          # assignment screenshots
 │   └── notes.md              # technical notes
 ├── .github/workflows/        # GitHub Actions CI pipeline
-├── Dockerfile
+├── Dockerfile                # multi-stage build
 ├── docker-compose.yml
 ├── Makefile
 ├── requirements.txt
@@ -123,6 +135,46 @@ docker rmi supermarket-sales-api
 
 With Make, `make stop` stops and removes the container, and `make clean` also removes the image.
 
+## Deploy on a VPS / Cloud Environment
+
+This project was deployed on **GitHub Codespaces**, a Linux environment with Docker. On a regular Ubuntu VPS the steps are the same.
+
+1. **Check Git and Docker** (install them if they are missing):
+
+   ```bash
+   git --version
+   docker --version
+   docker compose version
+   ```
+
+   On Ubuntu, install Git with `sudo apt update && sudo apt install -y git`, then install Docker with `curl -fsSL https://get.docker.com | sudo sh`.
+
+2. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/sondos-ayman-habib/Supermarket-Sales-API.git
+   cd Supermarket-Sales-API
+   ```
+
+3. **Build and run the container:**
+
+   ```bash
+   docker compose up -d --build
+   docker ps
+   ```
+
+   The container should show `Up ... (healthy)`.
+
+4. **Open port 8000.** In Codespaces, add port `8000` in the **Ports** tab and set its visibility to **Public**. On a VPS, allow port `8000` in the firewall or security group.
+
+5. **Verify the deployment** by opening `/docs` on the public URL (see [Production URL](#production-url)) and running `GET /summary`. It should return `rows: 1000`.
+
+6. **Stop the deployment:**
+
+   ```bash
+   docker compose down
+   ```
+
 ## API Endpoints
 
 | Method | Endpoint                 | Description                                                      |
@@ -155,7 +207,7 @@ Example response (12.5 x 4 = 50, minus a 10% discount):
 {
   "valid": true,
   "kind": "discounted",
-  "total": 45
+  "total": 45.0
 }
 ```
 
@@ -209,11 +261,9 @@ Sales data comes from the [Supermarket Sales Dataset](https://www.kaggle.com/dat
 
 This project is based on our team's earlier project, `Supermarket-Sales-Analyzer`, a set of Python scripts that analyze the Kaggle Supermarket Sales dataset. It was restructured here as a FastAPI service and containerized with Docker for this assignment. The dataset is credited in the Dataset section above.
 
-
- ## License
+## License
 
 This project is licensed under the MIT License. See [LICENSE.txt](LICENSE.txt) for details.
-
 
 ## Author
 
