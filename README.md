@@ -1,4 +1,4 @@
- # Supermarket-Sales-API
+# Supermarket-Sales-API
 
 A Python backend API that analyzes supermarket sales data from Kaggle. Built with **FastAPI**, containerized with **Docker**, deployed on **GitHub Codespaces**, and verified with **pytest** and **GitHub Actions CI**.
 
@@ -16,11 +16,12 @@ A Python backend API that analyzes supermarket sales data from Kaggle. Built wit
 
 The API is deployed on **GitHub Codespaces** (Docker container, port 8000, public):
 
-- Swagger UI: https://silver-space-waffle-5vg9r59v5p7qf4vqg-8000.app.github.dev/docs
-- Health check: https://silver-space-waffle-5vg9r59v5p7qf4vqg-8000.app.github.dev/health
+- Swagger UI: https://improved-space-memory-4q7r446rx4gp39rg-8000.app.github.dev/docs
+- Health check: https://improved-space-memory-4q7r446rx4gp39rg-8000.app.github.dev/health
 
 > **Note:** Codespaces is not a permanent server. The URL works only while the
-> Codespace is running, and it stops automatically after a period of inactivity.
+> Codespace is running, and it stops automatically after a period of inactivity. If a
+> new Codespace is created with a different name, update the URL above accordingly.
 
 ## Tech Stack
 
