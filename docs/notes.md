@@ -1,20 +1,28 @@
-﻿# Technical Notes — OS Lab Assignment #2
+﻿ # Technical Notes — OS Lab Assignments #2 and #3
 
-## 1. Docker & Syntax Troubleshooting
-- **Problem:** While checking Python syntax inside the container using `compileall`, a `SyntaxError` and `IndentationError` appeared at the beginning of `src/analytics.py` due to stray characters (`@'`) from file creation.
-- **Solution:** Cleaned up the file structure, fixed the indentation, rebuilt the image (`docker compose build`), and re-ran `python -m compileall -q /app/src` to ensure everything compiled cleanly before starting the service.
+## Assignment 2: Docker & GitHub
 
-## 2. Git Workflow & Branching
-- **Lesson:** Using a separate branch (`feature/api-compose-ci`) and breaking work into small, clear commits (`feat:`, `docker:`, `chore:`, `ci:`) made it much easier to track changes and collaborate cleanly without messing up the main branch.
+### 1. Choosing the project
+- **Challenge:** Selecting a project suitable for the lab that is meaningful, testable by users, and straightforward to run inside Docker, since our earlier work consisted of standalone Python analysis scripts rather than a service.
+- **Solution:** Converted the analysis scripts into a FastAPI application exposing endpoints such as `/health`, `/summary`, and `/sales/by-branch`, and bundled the dataset inside the repository (`src/data/`) so building the image requires no external downloads.
 
-## 3. Automated CI/CD (GitHub Actions)
-- **Experience:** Setting up GitHub Actions to automatically run unit tests (`pytest`) and build the Docker image on every Pull Request gave us instant feedback and ensured that our code changes didn't break anything.
+### 2. Biggest Docker problems
+- **Problem:** `requirements.txt` initially listed only `fastapi` and `uvicorn`, even though the application code imports `pandas`, `numpy`, and `openpyxl`. The image would have built without `pip install` errors, but the container would have failed at startup with `ModuleNotFoundError`.
+- **Solution:** Added `pandas`, `numpy`, and `openpyxl` to `requirements.txt` while preserving the version constraints for `fastapi` and `uvicorn`, then rebuilt the image with `docker compose build`.
+- **Problem:** Running `python -m compileall` inside the container reported a `SyntaxError` and an `IndentationError` in `src/analytics.py` caused by stray PowerShell characters (`@'`) saved into the file.
+- **Solution:** Removed the stray characters from `src/analytics.py`, rebuilt the image with `docker compose build`, and re-ran `python -m compileall` until it completed cleanly with zero errors.
 
-## 4. Makefile Shortcuts
-- **Usage:** Adding a Makefile helped automate repetitive terminal commands (`build`, `run`, `test`), making it faster and simpler to manage the project locally.
+### 3. Most important Git/GitHub lesson
+- Developing on a feature branch (`feature/api-compose-ci`) and merging via a Pull Request with small, prefixed commits (`feat:`, `docker:`, `docs:`) kept `main` clean and made the commit history easy to trace. GitHub Actions ran checks on each push, helping catch issues early.
 
-## 5. Automated Unit Testing
-- **Implementation:** Added a dedicated `tests/` directory with `pytest` covering API endpoints, data models, and analytics logic to ensure code correctness and catch bugs early.
+## Assignment 3: Deployment to a VPS
 
-## 6. API Structure & Data Validation
-- **Implementation:** Built the backend using FastAPI and structured data models to handle supermarket sales queries and validate inputs efficiently.
+**Provider and environment:** GitHub Codespaces (Linux, Docker).
+
+### Challenges and how I solved them
+- **Challenge:** Opening the forwarded public URL in the browser returned `HTTP 401`.
+- **Solution:** Port `8000` was still set to `Private` in the **Ports** tab. Changing its visibility to `Public` allowed access to the API (including `/docs`) without authentication prompts.
+- **Challenge:** After stopping and restarting the Codespace, `docker compose up -d` failed with `failed to extract layer ... content digest ... not found`.
+- **Solution:** The local Docker image/build cache was corrupted. Removed the affected image and build cache, rebuilt cleanly with `docker compose build --no-cache`, and started the container again.
+- **Challenge:** Missed taking a screenshot of `git clone` before uploading screenshots to GitHub, while the workspace already contained the cloned repository.
+- **Solution:** Cloned the repository into a temporary directory (`/tmp`), captured the screenshot, and deleted `/tmp` afterward without disturbing the active project workspace.
